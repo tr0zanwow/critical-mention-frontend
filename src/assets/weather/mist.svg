@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="40" height="20" viewBox="0 0 40 20">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #FAFAFA;
+        fill-rule: evenodd;
+      }
+    </style>
+  </defs>
+  <path id="Fog_Icon" data-name="Fog Icon" class="cls-1" d="M479,572h-8a1,1,0,0,1,0-2h8A1,1,0,0,1,479,572Zm-14,0H441a1,1,0,0,1,0-2h24A1,1,0,0,1,465,572Zm-22,6a1,1,0,0,1,0-2h8a1,1,0,0,1,0,2h-8Zm-2,4h24a1,1,0,0,1,0,2H441A1,1,0,0,1,441,582Zm2,6h14a1,1,0,0,1,0,2H443A1,1,0,0,1,443,588Zm20,0h14a1,1,0,0,1,0,2H463A1,1,0,0,1,463,588Zm-6-10a1,1,0,0,1,0-2h20a1,1,0,0,1,0,2H457Zm13,5a1,1,0,0,1,1-1h8a1,1,0,0,1,0,2h-8A1,1,0,0,1,470,583Z" transform="translate(-440 -570)"/>
+</svg>
