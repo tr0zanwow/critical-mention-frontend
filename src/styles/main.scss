@@ -1,0 +1,13 @@
+@import './fonts'; //Import local and web fonts
+@import './variables'; //Import Golbal variables
+
+//Remove html body default margin
+body {
+    margin: 0 !important;
+    font-family: 'Poppins', sans-serif;
+    color: #FAFAFA;
+
+    p {
+        margin: 0;
+    }
+}
