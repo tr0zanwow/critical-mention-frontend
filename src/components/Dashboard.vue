@@ -12,11 +12,58 @@
         <p class="weather-location">{{ weatherLocation }}</p>
         <p class="current-temprature">{{ currentTemprature }}</p>
         <div class="chng-loc-wrapper">
-          <img src="@/assets/pin.svg" alt="" class="chng-loc-wrapper--icon" />
-          <p class="chng-loc-wrapper--label">Change Location</p>
+          <img src="@/assets/pin.svg" alt="" class="chng-loc-wrapper__icon" />
+          <p class="chng-loc-wrapper__label">Change Location</p>
         </div>
       </div>
-      <div class="other-stastics-wrapper"></div>
+      <div class="other-stastics-wrapper">
+        <div class="right-panel">
+          <div class="stats-wrapper">
+            <img
+              src="@/assets/weather/humidity.svg"
+              alt=""
+              class="stats-wrapper__icon"
+            />
+            <div class="label-value-wrapper">
+              <p class="label">Humidity</p>
+              <p class="value">{{ humidityPercent }}</p>
+            </div>
+          </div>
+          <div class="stats-wrapper">
+            <img
+              src="@/assets/weather/pressure.svg"
+              alt=""
+              class="stats-wrapper__icon"
+            />
+            <div class="label-value-wrapper">
+              <p class="label">Air Pressure</p>
+              <p class="value">{{ airPressure }}</p>
+            </div>
+          </div>
+          <div class="stats-wrapper">
+            <img
+              src="@/assets/weather/shower_rain.svg"
+              alt=""
+              class="stats-wrapper__icon"
+            />
+            <div class="label-value-wrapper">
+              <p class="label">Chance of Rain</p>
+              <p class="value">{{ rainChancePercent }}</p>
+            </div>
+          </div>
+          <div class="stats-wrapper">
+            <img
+              src="@/assets/weather/wind.svg"
+              alt=""
+              class="stats-wrapper__icon"
+            />
+            <div class="label-value-wrapper">
+              <p class="label">Wind Speed</p>
+              <p class="value">{{ windSpeed }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="container__timeline"></div>
   </div>
@@ -35,6 +82,18 @@ export default {
       var temp = 28
       return temp.unitCelsius()
     },
+    humidityPercent() {
+      return '50 %'
+    },
+    airPressure(){
+        return '1009.483 PS'
+    },
+    rainChancePercent(){
+        return '0 %'
+    },
+    windSpeed(){
+        return '1.4 km/h'
+    }
   },
 }
 </script>
@@ -107,12 +166,12 @@ export default {
         align-items: center;
         cursor: pointer;
 
-        &--icon {
+        &__icon {
           height: 14px;
           width: 14px;
         }
 
-        &--label {
+        &__label {
           margin-left: 2px;
           font-size: 14px;
           font-weight: 500;
@@ -124,6 +183,51 @@ export default {
       height: 100%;
       width: 100%;
       flex: 1;
+      padding-right: 30px;
+      padding-top: 40px;
+      display: flex;
+      justify-content: flex-end;
+
+      .right-panel {
+        width: fit-content;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: flex-start;
+
+        .stats-wrapper {
+          display: flex;
+          height: fit-content;
+          width: fit-content;
+          user-select: none;
+
+          &:not(:first-child) {
+            margin-top: 18px;
+          }
+
+          &__icon {
+            width: 23px;
+            height: 23px;
+            margin-top: 6px;
+          }
+
+          .label-value-wrapper {
+            display: flex;
+            flex-direction: column;
+            margin-left: 12px;
+
+            .label {
+              font-size: 14px;
+            }
+
+            .value {
+              font-size: 26px;
+              font-weight: 500;
+            }
+          }
+        }
+      }
     }
   }
 
