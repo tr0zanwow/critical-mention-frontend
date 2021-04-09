@@ -11,15 +11,16 @@
         </div>
       </div>
       <div class="location-temp-wrapper">
-        <img
-          class="weather-icon"
-          src="@/assets/weather/shower_rain.svg"
-          alt=""
-          srcset=""
-        />
+        <img class="weather-icon" :src="weatherIconUrl()" alt="" srcset="" />
         <p class="weather-type">{{ weatherType }}</p>
         <p class="weather-location">{{ weatherLocation }}</p>
-        <p class="current-temprature">{{ currentTemprature }}</p>
+        <p
+          class="current-temprature"
+          :title="currentTempratureTitle"
+          @click="tempratureUnitToggle = !tempratureUnitToggle"
+        >
+          {{ currentTemprature }}
+        </p>
         <div
           class="chng-loc-wrapper"
           :class="{ 'chng-loc-wrapper--disable': chngLocVisibilityDisable }"
@@ -39,48 +40,48 @@
             alt=""
             class="chng-loc-input-wrapper__icon"
           />
-          <div class="chng-loc-input-wrapper__input-sub-wrapper">
-            <input
-              placeholder="Search for location"
-              class="location-input"
-              type="text"
-              v-model="searchLocationInput"
-              @input="searchLocation"
-            />
-            <img
-              src="@/assets/geolocate.svg"
-              class="geolocate-icon"
-              alt="geolocate icon"
-              title="Get current location"
-            />
-            <img
-              src="@/assets/close.svg"
-              title="Close"
-              class="close-icon"
-              @click="chngLocVisibility()"
-              alt="close icon"
-            />
-          </div>
-        </div>
-        <div
-          class="loc-input-result-wrapper"
-          :class="{ 'loc-input-result-wrapper--enable': showLocInputResult }"
-        >
-          <div class="loc-result-item">
-            <p class="loc-result-item__loc-name">&#8226; Mumbai</p>
-            <p class="loc-result-item__loc-country">USA</p>
-          </div>
-          <div class="loc-result-item">
-            <p class="loc-result-item__loc-name">&#8226; Mumbai</p>
-            <p class="loc-result-item__loc-country">India</p>
-          </div>
-          <div class="loc-result-item">
-            <p class="loc-result-item__loc-name">&#8226; Mumbai</p>
-            <p class="loc-result-item__loc-country">India</p>
-          </div>
-          <div class="loc-result-item">
-            <p class="loc-result-item__loc-name">&#8226; Mumbai</p>
-            <p class="loc-result-item__loc-country">India</p>
+          <div class="chng-loc-input-wrapper__input-and-result-wrapper">
+            <div class="input-wrapper">
+              <input
+                placeholder="Search for location"
+                class="location-input"
+                type="text"
+                v-model="searchLocationInput"
+                @input="searchLocation"
+              />
+              <img
+                src="@/assets/geolocate.svg"
+                class="geolocate-icon"
+                alt="geolocate icon"
+                @click="geolocateUserLocation()"
+                title="Get current location"
+              />
+              <img
+                src="@/assets/close.svg"
+                title="Close"
+                class="close-icon"
+                @click="chngLocVisibility()"
+                alt="close icon"
+              />
+            </div>
+            <div
+              class="loc-input-result-wrapper"
+              :class="{
+                'loc-input-result-wrapper--enable': showLocInputResult,
+              }"
+            >
+              <div
+                class="loc-result-item"
+                v-for="(item, index) in autoSuggestLocationList"
+                :key="item.location + index"
+                @click="getLocationWeather(item)"
+              >
+                <p class="loc-result-item__loc-name">
+                  &#8226; {{ item.location }}
+                </p>
+                <p class="loc-result-item__loc-country">{{ item.country }}</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -174,14 +175,29 @@ export default {
       activeItem: false,
       chngLocVisibilityDisable: false,
       showLocInputResult: false,
+      tempratureUnitToggle: false,
       timer: {},
       searchLocationInput: '',
       currentTime: '',
       AMPM: '',
+      currentTempratureTitle: '',
+    }
+  },
+  created() {
+    if (
+      Object.keys(this.$store.getters.getCurrentSelectedWeatherData).length ===
+      0
+    ) {
+      this.$store.dispatch('geolocateUserLocation').then((response) => {
+        this.$store.dispatch('locationWeather', response).then(() => {
+          this.$store.commit('setCurrentSelectedWeatherData', { index: 1 })
+        })
+      })
     }
   },
   mounted() {
     this.activeItem = 0
+
     this.getCurrentTime()
     setInterval(
       function() {
@@ -190,34 +206,60 @@ export default {
       1000
     )
   },
+  watch: {
+    tempratureUnitToggle: function(val) {
+      if (val) {
+        this.currentTempratureTitle = 'Convert to ° Fahrenheit'
+      } else {
+        this.currentTempratureTitle = 'Convert to ° Celsius'
+      }
+    },
+  },
   computed: {
+    autoSuggestLocationList() {
+      return this.$store.getters.getAutoSuggestLocationList
+    },
     weatherType() {
-      return 'Fog'
+      return this.$store.getters.getCurrentSelectedWeatherData.weather_type
     },
     weatherLocation() {
-      return 'Mumbai City'
+      return this.$store.getters.getCurrentLocationName
     },
     currentTemprature() {
-      var temp = 28
-      return temp.unitCelsius()
+      if (this.tempratureUnitToggle) {
+        return this.$store.getters.getCurrentSelectedWeatherData.temprature.unitFahrenheit()
+      } else {
+        return this.$store.getters.getCurrentSelectedWeatherData.temprature.unitCelsius()
+      }
     },
     humidityPercent() {
-      return '50 %'
+      return this.$store.getters.getCurrentSelectedWeatherData.humidity + ' %'
     },
     airPressure() {
-      return '1009.483 PS'
+      return this.$store.getters.getCurrentSelectedWeatherData.pressure + ' PS'
     },
     rainChancePercent() {
       return '0 %'
     },
     windSpeed() {
-      return '1.4 km/h'
-    },
-    previousDayName() {
-      return 'Thursday'
+      return (
+        (
+          this.$store.getters.getCurrentSelectedWeatherData.wind_speed * 3.6
+        ).toFixed(1) + ' km/h'
+      )
     },
   },
   methods: {
+    weatherIconUrl() {
+      if (
+        Object.keys(this.$store.getters.getCurrentSelectedWeatherData).length !=
+        0
+      ) {
+        return this.$store.getters.getWeatherIconUrl
+      } else {
+        return require(`../assets/weather/rain.svg`)
+      }
+    },
     chngLocVisibility() {
       this.chngLocVisibilityDisable = !this.chngLocVisibilityDisable
       this.searchLocationInput = ''
@@ -252,10 +294,12 @@ export default {
       }
       var vm = this
       this.timer = setTimeout(function() {
-        console.log('Input fired', vm.searchLocationInput)
         vm.searchLocationInput == ''
           ? (vm.showLocInputResult = false)
           : (vm.showLocInputResult = true)
+        vm.$store.dispatch('locationInputAutoComplete', {
+          location: vm.searchLocationInput,
+        })
       }, 200)
     },
     getCurrentTime() {
@@ -268,10 +312,28 @@ export default {
         .split(' ')
       const hours = ('0' + hoursAMPM[0]).slice(-2)
       this.AMPM = hoursAMPM[1]
-      const minutes = currentTime
-        .toLocaleString('en-US', { minute: 'numeric' })
-        .slice(-2)
+      const minutes = (
+        '0' + currentTime.toLocaleString('en-US', { minute: 'numeric' })
+      ).slice(-2)
       this.currentTime = hours + ':' + minutes
+    },
+    geolocateUserLocation() {
+      this.$store.dispatch('geolocateUserLocation').then((response) => {
+        this.$store.dispatch('locationWeather', response).then(() => {
+          this.$store.commit('setCurrentSelectedWeatherData', { index: 1 })
+          this.chngLocVisibilityDisable = false
+        })
+      })
+    },
+    getLocationWeather(payload) {
+      this.searchLocationInput = payload.location + ', ' + payload.country
+      this.showLocInputResult = false
+
+      this.$store.dispatch('locationWeather', payload.coordinates).then(() => {
+        this.$store.commit('setCurrentLocation', payload.location)
+        this.$store.commit('setCurrentSelectedWeatherData', { index: 1 })
+        this.chngLocVisibilityDisable = false
+      })
     },
   },
 }
@@ -361,6 +423,7 @@ export default {
             font-size: 11px;
             font-weight: 400;
             height: fit-content;
+            color: rgba(255, 255, 255, 0.747);
             width: 70%;
           }
         }
@@ -416,6 +479,7 @@ export default {
         opacity: 1;
 
         &__icon {
+          margin-top: -2px;
           height: 14px;
           width: 14px;
         }
@@ -440,49 +504,120 @@ export default {
         display: flex;
         width: fit-content;
         height: fit-content;
-        align-items: center;
+        align-items: flex-start;
         transition: all 0.25s linear;
         visibility: hidden;
         opacity: 0;
 
         &__icon {
+          margin-top: 6px;
           height: 14px;
           width: 14px;
         }
-        &__input-sub-wrapper {
-          border: 1px solid rgba(255, 255, 255, 0.411);
-          padding: 4px 6px;
-          margin-left: 4px;
-          display: flex;
-          align-items: center;
+        &__input-and-result-wrapper {
+          .input-wrapper {
+            border: 1px solid rgba(255, 255, 255, 0.411);
+            padding: 4px 6px;
+            margin-left: 4px;
+            display: flex;
+            align-items: center;
 
-          .location-input {
-            background: transparent;
-            color: white;
-            border: none;
-            outline: 0;
-            min-width: 150px;
-            font-size: 14px;
+            .location-input {
+              background: transparent;
+              color: white;
+              border: none;
+              outline: 0;
+              min-width: 150px;
+              font-size: 14px;
 
-            &::-webkit-input-placeholder {
-              color: rgba(255, 255, 255, 0.644);
+              &::-webkit-input-placeholder {
+                color: rgba(255, 255, 255, 0.644);
+              }
+            }
+
+            .geolocate-icon {
+              height: 15px;
+              width: 15px;
+              user-select: none;
+              margin-left: 3px;
+              cursor: pointer;
+            }
+
+            .close-icon {
+              height: 11px;
+              width: 11px;
+              user-select: none;
+              margin-left: 8px;
+              cursor: pointer;
             }
           }
 
-          .geolocate-icon {
-            height: 15px;
-            width: 15px;
-            user-select: none;
+          .loc-input-result-wrapper {
+            max-height: 130px;
+            height: 0px;
+            padding: 5px 8px;
+            background: transparent;
+            backdrop-filter: blur(10px);
+            width: calc(100% - 3px);
             margin-left: 3px;
-            cursor: pointer;
-          }
+            box-sizing: border-box;
+            overflow-y: auto;
+            opacity: 0;
+            transition: all 0.2s linear;
 
-          .close-icon {
-            height: 11px;
-            width: 11px;
-            user-select: none;
-            margin-left: 8px;
-            cursor: pointer;
+            .loc-result-item {
+              display: none;
+              flex-direction: column;
+              cursor: pointer;
+              box-sizing: border-box;
+              padding: 1px 4px;
+              margin-left: -7px;
+
+              &__loc-name {
+                font-size: 13px;
+                color: white;
+                width: fit-content;
+                max-width: 150px;
+              }
+
+              &__loc-country {
+                font-size: 10px;
+                color: white;
+                margin-left: 9px;
+              }
+
+              &:not(:first-child) {
+                margin-top: 5px;
+              }
+
+              &:hover {
+                background: rgba(255, 255, 255, 0.065);
+              }
+            }
+
+            &::-webkit-scrollbar {
+              width: 7px;
+              height: 12px;
+            }
+
+            &::-webkit-scrollbar-thumb {
+              border-radius: 8px;
+              background: #bcbab78a;
+              min-height: 40px;
+            }
+
+            &::-webkit-scrollbar-track {
+              background: transparent;
+            }
+
+            &--enable {
+              height: fit-content;
+              opacity: 1;
+
+              .loc-result-item {
+                display: flex;
+              }
+            }
           }
         }
       }
@@ -490,66 +625,6 @@ export default {
       .chng-loc-input-wrapper--enable {
         visibility: visible;
         opacity: 1;
-      }
-
-      .loc-input-result-wrapper {
-        max-height: 130px;
-        height: 0px;
-        padding: 5px 8px;
-        background: transparent;
-        backdrop-filter: blur(10px);
-        width: 225px;
-        box-sizing: border-box;
-        margin-left: 50px;
-        overflow-y: auto;
-        opacity: 0;
-        transition: all 0.2s linear;
-
-        .loc-result-item {
-          display: none;
-          flex-direction: column;
-          cursor: pointer;
-
-          &__loc-name {
-            font-size: 13px;
-            color: white;
-          }
-
-          &__loc-country {
-            font-size: 10px;
-            color: white;
-            margin-left: 9px;
-          }
-
-          &:not(:first-child) {
-            margin-top: 5px;
-          }
-        }
-
-        &::-webkit-scrollbar {
-          width: 7px;
-          height: 12px;
-        }
-
-        &::-webkit-scrollbar-thumb {
-          border-radius: 8px;
-          background: #bcbab78a;
-          min-height: 40px;
-        }
-
-        &::-webkit-scrollbar-track {
-          background: transparent;
-        }
-      }
-
-      .loc-input-result-wrapper--enable {
-        height: fit-content;
-        opacity: 1;
-        margin-left: 23px;
-
-        .loc-result-item {
-          display: flex;
-        }
       }
     }
 
