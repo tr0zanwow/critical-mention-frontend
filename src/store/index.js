@@ -13,6 +13,9 @@ export default new Vuex.Store({
       data: [],
     },
 
+    //Selected location timezone
+    selectedLocationTimezone: '',
+
     //Current user selected location data
     currentSelectedWeatherData: {},
 
@@ -26,6 +29,9 @@ export default new Vuex.Store({
     setSelectedLocationWeatherDataSpecificIndex(state, payload) {
       state.selectedLocationWeatherData.data.splice(1, 0, payload)
     },
+    resetSelectedLocationWeatherData(state) {
+      state.selectedLocationWeatherData.data = []
+    },
     setAutoSuggestLocationList(state, payload) {
       state.autoSuggestLocationList = payload
     },
@@ -35,6 +41,9 @@ export default new Vuex.Store({
     setCurrentSelectedWeatherData(state, payload) {
       state.currentSelectedWeatherData =
         state.selectedLocationWeatherData.data[payload.index]
+    },
+    setSelectedLocationTimezone(state, payload) {
+      state.selectedLocationTimezone = payload
     },
   },
   getters: {
@@ -195,6 +204,9 @@ export default new Vuex.Store({
     },
     locationWeather(context, payload) {
       return new Promise((resolve, reject) => {
+        //Reset selected location weather data before adding new data
+        context.commit('resetSelectedLocationWeatherData')
+
         //Weather API query parameters
         const sParams = new URLSearchParams()
         sParams.append('lat', payload.lat)
@@ -210,6 +222,12 @@ export default new Vuex.Store({
             params: sParams,
           })
           .then((response) => {
+            //Save current selected location timezone
+            context.commit(
+              'setSelectedLocationTimezone',
+              response.data.timezone
+            )
+
             //Making use of bind function to reuse responseWeatherData object mapping
             var responseWeatherData = {
               data: function() {
@@ -256,7 +274,8 @@ export default new Vuex.Store({
       storage: window.localStorage,
       reducer: (state) => ({
         selectedLocationWeatherData: state.selectedLocationWeatherData,
-        currentSelectedWeatherData: state.currentSelectedWeatherData
+        currentSelectedWeatherData: state.currentSelectedWeatherData,
+        selectedLocationTimezone: state.selectedLocationTimezone,
       }),
     }).plugin,
   ],
