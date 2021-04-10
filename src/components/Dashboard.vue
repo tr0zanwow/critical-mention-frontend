@@ -139,14 +139,28 @@
         <div class="timeline-list" ref="timelineList">
           <div
             class="timeline-list__item"
-            v-for="(item, index) in 24"
+            v-for="(item, index) in getTimelineList()"
             :key="item + index"
-            @click="selectedItem(index)"
-            :class="{ 'timeline-list__item--active': index === activeItem }"
           >
-            <p class="time">{{ hourlyTime(index) }}</p>
-            <p class="temprature">{{ hourlyTemprature() }}</p>
-            <p class="feels-like-temp">Feels like {{ hourlyTemprature() }}</p>
+            <div
+              class="list-item-day"
+              :class="{ 'list-item-day--show': dayName({}, index) }"
+            >
+              {{ dayName(item, index) }}
+            </div>
+            <div
+              class="list-item-wrapper"
+              @click="selectedItem(index)"
+              :class="{
+                'list-item-wrapper__item--active': index === activeItem,
+              }"
+            >
+              <p class="time">{{ hourlyTime(item.date) }}</p>
+              <p class="temprature">{{ hourlyTemprature(item.temprature) }}</p>
+              <p class="feels-like-temp">
+                Feels like {{ hourlyTemprature(item.feels_like) }}
+              </p>
+            </div>
           </div>
         </div>
         <div class="timeline-navigation">
@@ -169,6 +183,7 @@
 </template>
 
 <script>
+import moment from 'moment-timezone'
 export default {
   data() {
     return {
@@ -201,6 +216,7 @@ export default {
     this.getCurrentTime()
     setInterval(
       function() {
+        console.log('calling current time')
         this.getCurrentTime()
       }.bind(this),
       1000
@@ -226,11 +242,9 @@ export default {
       return this.$store.getters.getCurrentLocationName
     },
     currentTemprature() {
-      if (this.tempratureUnitToggle) {
-        return this.$store.getters.getCurrentSelectedWeatherData.temprature.unitFahrenheit()
-      } else {
-        return this.$store.getters.getCurrentSelectedWeatherData.temprature.unitCelsius()
-      }
+      return this.$store.getters.getCurrentSelectedWeatherData.temprature.getTempratureInUnit(
+        { fahrenheit: this.tempratureUnitToggle }
+      )
     },
     humidityPercent() {
       return this.$store.getters.getCurrentSelectedWeatherData.humidity + ' %'
@@ -250,6 +264,32 @@ export default {
     },
   },
   methods: {
+    dayName(item, index) {
+      if (index == 0) {
+        if (item) {
+          return moment.unix(item.date).format('ddd Do MMM')
+        } else {
+          return true
+        }
+      } else {
+        var currentDate = moment
+          .unix(this.getTimelineList()[index].date)
+          .format('D')
+        var previousDate = moment
+          .unix(this.getTimelineList()[index - 1].date)
+          .format('D')
+        if (currentDate != previousDate) {
+          if (item) {
+            return moment.unix(item.date).format('ddd Do MMM')
+          } else {
+            return true
+          }
+        }
+      }
+    },
+    getTimelineList() {
+      return this.$store.getters.getCurrentLocationDataList
+    },
     weatherIconUrl() {
       if (
         Object.keys(this.$store.getters.getCurrentSelectedWeatherData).length !=
@@ -279,14 +319,19 @@ export default {
       }
     },
     hourlyTime(value) {
-      return value + ' PM'
+      return moment
+        .unix(value)
+        .tz(this.$store.state.selectedLocationTimezone)
+        .format('h A')
     },
-    hourlyTemprature() {
-      var temp = 28
-      return temp.unitCelsius()
+    hourlyTemprature(value) {
+      return value.getTempratureInUnit({
+        fahrenheit: this.tempratureUnitToggle,
+      })
     },
     selectedItem(value) {
       this.activeItem = value
+      this.$store.commit('setCurrentSelectedWeatherData', { index: value })
     },
     searchLocation() {
       if (this.timer) {
@@ -303,19 +348,12 @@ export default {
       }, 200)
     },
     getCurrentTime() {
-      const currentTime = new Date()
-      const hoursAMPM = currentTime
-        .toLocaleString('en-US', {
-          hour: 'numeric',
-          hour12: true,
-        })
-        .split(' ')
-      const hours = ('0' + hoursAMPM[0]).slice(-2)
-      this.AMPM = hoursAMPM[1]
-      const minutes = (
-        '0' + currentTime.toLocaleString('en-US', { minute: 'numeric' })
-      ).slice(-2)
-      this.currentTime = hours + ':' + minutes
+      var time = moment(new Date())
+        .tz(this.$store.state.selectedLocationTimezone)
+        .format('hh:mm A')
+
+      this.currentTime = time.split(' ')[0]
+      this.AMPM = time.split(' ')[1]
     },
     geolocateUserLocation() {
       this.$store.dispatch('geolocateUserLocation').then((response) => {
@@ -373,7 +411,7 @@ export default {
   grid-template-areas:
     'statistics'
     'timeline';
-  grid-template-rows: 70% 30%;
+  grid-template-rows: 67% 33%;
   grid-template-columns: 1fr;
 
   &__statistics {
@@ -708,53 +746,74 @@ export default {
         }
 
         &__item {
-          align-self: center;
           min-width: 150px;
-          height: calc(100% - 20px);
-          background: transparent;
+          height: 100%;
           margin-left: 8px;
           margin-right: 8px;
           box-sizing: border-box;
-          overflow: hidden;
-          transition: all 0.25s ease;
-          cursor: pointer;
           display: flex;
           flex-direction: column;
-          padding: 30px 16px;
-          justify-content: space-around;
+
+          .list-item-day {
+            margin-left: 2px;
+            font-size: 14px;
+            font-weight: 600;
+            min-height: 20px;
+            opacity: 0;
+
+            &--show {
+              opacity: 1;
+            }
+          }
+
+          .list-item-wrapper {
+            margin-top: 8px;
+            align-self: center;
+            width: 100%;
+            height: calc(100% - 38px);
+            background: transparent;
+            box-sizing: border-box;
+            overflow: hidden;
+            transition: all 0.25s ease;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            padding: 30px 16px;
+            justify-content: space-around;
+
+            &:hover {
+              @include timeline-list-item__selected;
+            }
+
+            .time {
+              font-size: 15px;
+              transition: all 0.15s linear;
+            }
+
+            .temprature {
+              font-size: 30px;
+              font-weight: 700;
+              transition: font-size 0.15s linear;
+            }
+
+            .feels-like-temp {
+              font-size: 14px;
+              visibility: hidden;
+              opacity: 0;
+              height: 0;
+              margin-bottom: -25px;
+              transition: visibility 0.15s, opacity 0.15s, height 0.15s,
+                margin-bottom 0.15s linear;
+            }
+
+            &__item--active {
+              @include timeline-list-item__selected;
+            }
+          }
 
           &:first-child {
             margin-left: 45px;
           }
-
-          &:hover {
-            @include timeline-list-item__selected;
-          }
-
-          .time {
-            font-size: 15px;
-            transition: all 0.15s linear;
-          }
-
-          .temprature {
-            font-size: 30px;
-            font-weight: 700;
-            transition: font-size 0.15s linear;
-          }
-
-          .feels-like-temp {
-            font-size: 14px;
-            visibility: hidden;
-            opacity: 0;
-            height: 0;
-            margin-bottom: -25px;
-            transition: visibility 0.15s, opacity 0.15s, height 0.15s,
-              margin-bottom 0.15s linear;
-          }
-        }
-
-        &__item--active {
-          @include timeline-list-item__selected;
         }
       }
 
