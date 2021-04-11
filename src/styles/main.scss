@@ -1,5 +1,7 @@
 @import './fonts'; //Import local and web fonts
 
+$screen-sm-min: 576px; //Small tablets and smartphones
+
 //Remove html body default margin
 body {
     margin: 0 !important;
@@ -8,5 +10,12 @@ body {
 
     p {
         margin: 0;
+    }
+}
+
+// Small devices
+@mixin sm {
+    @media (max-width: #{$screen-sm-min}) {
+        @content;
     }
 }
