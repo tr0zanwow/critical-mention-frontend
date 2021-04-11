@@ -12,14 +12,14 @@
       </div>
       <div class="location-temp-wrapper">
         <img class="weather-icon" :src="weatherIconUrl()" alt="" srcset="" />
-        <p class="weather-type">{{ weatherType }}</p>
-        <p class="weather-location">{{ weatherLocation }}</p>
+        <p class="weather-type">{{ weatherType() }}</p>
+        <p class="weather-location">{{ weatherLocation() }}</p>
         <p
           class="current-temprature"
           :title="currentTempratureTitle"
           @click="tempratureUnitToggle = !tempratureUnitToggle"
         >
-          {{ currentTemprature }}
+          {{ currentTemprature() }}
         </p>
         <div
           class="chng-loc-wrapper"
@@ -95,7 +95,7 @@
             />
             <div class="label-value-wrapper">
               <p class="label">Humidity</p>
-              <p class="value">{{ humidityPercent }}</p>
+              <p class="value">{{ humidityPercent() }}</p>
             </div>
           </div>
           <div class="stats-wrapper">
@@ -106,7 +106,7 @@
             />
             <div class="label-value-wrapper">
               <p class="label">Air Pressure</p>
-              <p class="value">{{ airPressure }}</p>
+              <p class="value">{{ airPressure() }}</p>
             </div>
           </div>
           <div class="stats-wrapper">
@@ -117,7 +117,7 @@
             />
             <div class="label-value-wrapper">
               <p class="label">Chance of Rain</p>
-              <p class="value">{{ rainChancePercent }}</p>
+              <p class="value">{{ rainChancePercent() }}</p>
             </div>
           </div>
           <div class="stats-wrapper">
@@ -128,7 +128,7 @@
             />
             <div class="label-value-wrapper">
               <p class="label">Wind Speed</p>
-              <p class="value">{{ windSpeed }}</p>
+              <p class="value">{{ windSpeed() }}</p>
             </div>
           </div>
         </div>
@@ -191,7 +191,7 @@
           <div class="location-wrapper" @click="showSearchBarAndFocus()">
             <img src="@/assets/pin.svg" class="location-icon" alt="" />
             <p class="location-name">
-              {{ weatherLocation }}
+              {{ weatherLocation() }}
               <span class="change-location-label">(Change)</span>
             </p>
           </div>
@@ -254,7 +254,7 @@
               @click="tempratureUnitToggle = !tempratureUnitToggle"
             >
               <img src="@/assets/thermometer.svg" alt="" class="temp-icon" />
-              <p class="temprature">{{ currentTemprature }}</p>
+              <p class="temprature">{{ currentTemprature() }}</p>
             </div>
           </div>
           <div class="other-stats-wrapper">
@@ -264,7 +264,7 @@
                 alt=""
                 class="stats-wrapper__icon"
               />
-              <p class="stats-wrapper__value">{{ humidityPercent }}</p>
+              <p class="stats-wrapper__value">{{ humidityPercent() }}</p>
               <p class="stats-wrapper__label">Humidity</p>
             </div>
             <div class="stats-wrapper">
@@ -273,7 +273,7 @@
                 alt=""
                 class="stats-wrapper__icon"
               />
-              <p class="stats-wrapper__value">{{ airPressure }}</p>
+              <p class="stats-wrapper__value">{{ airPressure() }}</p>
               <p class="stats-wrapper__label">Pressure</p>
             </div>
             <div class="stats-wrapper">
@@ -282,7 +282,7 @@
                 alt=""
                 class="stats-wrapper__icon"
               />
-              <p class="stats-wrapper__value">{{ windSpeed }}</p>
+              <p class="stats-wrapper__value">{{ windSpeed() }}</p>
               <p class="stats-wrapper__label">Wind Speed</p>
             </div>
           </div>
@@ -349,7 +349,9 @@ export default {
   mounted() {
     this.activeItem = 0
 
-    this.getCurrentTime()
+    setTimeout(() => {
+      this.getCurrentTime()
+    }, 1200)
     setInterval(
       function() {
         this.getCurrentTime()
@@ -366,7 +368,8 @@ export default {
       }
     },
   },
-  computed: {
+  computed: {},
+  methods: {
     autoSuggestLocationList() {
       return this.$store.getters.getAutoSuggestLocationList
     },
@@ -397,8 +400,6 @@ export default {
         ).toFixed(1) + ' km/h'
       )
     },
-  },
-  methods: {
     backBtnMobile() {
       this.showSearchBar = false
       this.showLocInputResult = false
@@ -478,7 +479,6 @@ export default {
       this.$store.commit('setCurrentSelectedWeatherData', { index: value })
     },
     searchLocation() {
-      console.log(this.searchLocationInput)
       if (this.timer) {
         clearTimeout(this.timer)
       }
@@ -1117,13 +1117,13 @@ export default {
             }
           }
 
-          .geolocate-icon{
+          .geolocate-icon {
             height: 22px;
             width: 22px;
             margin-right: 8px;
             padding: 3px;
             cursor: pointer;
-            -webkit-tap-highlight-color:  rgba(255, 255, 255, 0); 
+            -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
           }
         }
 
