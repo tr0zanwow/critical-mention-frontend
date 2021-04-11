@@ -206,7 +206,7 @@
               @input="searchLocation"
               v-model="searchLocationInput"
               class="location-input"
-              placeholder="Search for location"
+              placeholder="Search for location (Press enter)"
               ref="locationInputMobile"
               type="text"
             />
