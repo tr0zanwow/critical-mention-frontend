@@ -179,6 +179,141 @@
         </div>
       </div>
     </div>
+    <div
+      class="container__mobile-view"
+      :class="{ 'container__mobile-view--search-bar-enable': showSearchBar }"
+    >
+      <div class="statistics-wrapper">
+        <div class="time-location-wrapper">
+          <p class="time">
+            {{ currentTime }}<span class="ampm">{{ AMPM }}</span>
+          </p>
+          <div class="location-wrapper" @click="showSearchBarAndFocus()">
+            <img src="@/assets/pin.svg" class="location-icon" alt="" />
+            <p class="location-name">
+              {{ weatherLocation }}
+              <span class="change-location-label">(Change)</span>
+            </p>
+          </div>
+          <div class="location-input-wrapper">
+            <img
+              @click="backBtnMobile()"
+              src="@/assets/left-arrow.svg"
+              alt=""
+              class="back-btn-icon"
+            />
+            <input
+              @input="searchLocation"
+              v-model="searchLocationInput"
+              class="location-input"
+              placeholder="Search for location"
+              ref="locationInputMobile"
+              type="text"
+            />
+            <img
+              @click="geolocateUserLocation()"
+              src="@/assets/geolocate.svg"
+              alt=""
+              class="geolocate-icon"
+            />
+          </div>
+          <div
+            class="location-input-result-wrapper"
+            :class="{
+              'location-input-result-wrapper--enable': showLocInputResult,
+            }"
+          >
+            <div
+              class="location-result-item"
+              v-for="(item, index) in autoSuggestLocationList"
+              :key="item.location + index"
+              @click="getLocationWeather(item)"
+            >
+              <p class="location-result-item__location-name">
+                &#8226; {{ item.location }}
+              </p>
+              <p class="location-result-item__location-country">
+                {{ item.country }}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="temp-statistics-wrapper">
+          <div class="current-temp-wrapper">
+            <div class="weather-type-icon">
+              <img
+                class="weather-icon"
+                :src="weatherIconUrl()"
+                alt=""
+                srcset=""
+              />
+              <p class="weather-type">Smoke</p>
+            </div>
+            <div
+              class="temp-icon-wrapper"
+              @click="tempratureUnitToggle = !tempratureUnitToggle"
+            >
+              <img src="@/assets/thermometer.svg" alt="" class="temp-icon" />
+              <p class="temprature">{{ currentTemprature }}</p>
+            </div>
+          </div>
+          <div class="other-stats-wrapper">
+            <div class="stats-wrapper">
+              <img
+                src="@/assets/weather/humidity.svg"
+                alt=""
+                class="stats-wrapper__icon"
+              />
+              <p class="stats-wrapper__value">{{ humidityPercent }}</p>
+              <p class="stats-wrapper__label">Humidity</p>
+            </div>
+            <div class="stats-wrapper">
+              <img
+                src="@/assets/weather/pressure.svg"
+                alt=""
+                class="stats-wrapper__icon"
+              />
+              <p class="stats-wrapper__value">{{ airPressure }}</p>
+              <p class="stats-wrapper__label">Pressure</p>
+            </div>
+            <div class="stats-wrapper">
+              <img
+                src="@/assets/weather/wind.svg"
+                alt=""
+                class="stats-wrapper__icon"
+              />
+              <p class="stats-wrapper__value">{{ windSpeed }}</p>
+              <p class="stats-wrapper__label">Wind Speed</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="timeline-wrapper">
+        <template v-for="(item, index) in getTimelineList()">
+          <div
+            class="timeline-wrapper__day"
+            :key="index"
+            :class="{ 'timeline-wrapper__day--show': dayName({}, index) }"
+          >
+            {{ dayName(item, index) }}
+          </div>
+          <div
+            class="timeline-wrapper__item-wrapper"
+            :key="item.date"
+            @click="selectedItem(index)"
+            :class="{
+              'timeline-wrapper__item-wrapper--active': index === activeItem,
+            }"
+          >
+            <p class="time">{{ hourlyTime(item.date) }}</p>
+            <p class="temprature">{{ hourlyTemprature(item.temprature) }}</p>
+            <p class="feels-like">
+              Feels like {{ hourlyTemprature(item.feels_like) }}
+            </p>
+          </div>
+        </template>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -191,6 +326,7 @@ export default {
       chngLocVisibilityDisable: false,
       showLocInputResult: false,
       tempratureUnitToggle: false,
+      showSearchBar: false,
       timer: {},
       searchLocationInput: '',
       currentTime: '',
@@ -216,7 +352,6 @@ export default {
     this.getCurrentTime()
     setInterval(
       function() {
-        console.log('calling current time')
         this.getCurrentTime()
       }.bind(this),
       1000
@@ -264,6 +399,15 @@ export default {
     },
   },
   methods: {
+    backBtnMobile() {
+      this.showSearchBar = false
+      this.showLocInputResult = false
+    },
+    showSearchBarAndFocus() {
+      this.showSearchBar = true
+      this.searchLocationInput = ''
+      this.$refs.locationInputMobile.focus()
+    },
     dayName(item, index) {
       if (index == 0) {
         if (item) {
@@ -334,6 +478,7 @@ export default {
       this.$store.commit('setCurrentSelectedWeatherData', { index: value })
     },
     searchLocation() {
+      console.log(this.searchLocationInput)
       if (this.timer) {
         clearTimeout(this.timer)
       }
@@ -350,7 +495,7 @@ export default {
     getCurrentTime() {
       var time = moment(new Date())
         .tz(this.$store.state.selectedLocationTimezone)
-        .format('hh:mm A')
+        .format('h:mm A')
 
       this.currentTime = time.split(' ')[0]
       this.AMPM = time.split(' ')[1]
@@ -360,6 +505,7 @@ export default {
         this.$store.dispatch('locationWeather', response).then(() => {
           this.$store.commit('setCurrentSelectedWeatherData', { index: 1 })
           this.chngLocVisibilityDisable = false
+          this.backBtnMobile()
         })
       })
     },
@@ -371,6 +517,8 @@ export default {
         this.$store.commit('setCurrentLocation', payload.location)
         this.$store.commit('setCurrentSelectedWeatherData', { index: 1 })
         this.chngLocVisibilityDisable = false
+        this.showSearchBar = false
+        this.showLocInputResult = false
       })
     },
   },
@@ -414,12 +562,20 @@ export default {
   grid-template-rows: 67% 33%;
   grid-template-columns: 1fr;
 
+  @include sm {
+    display: flex;
+  }
+
   &__statistics {
     height: 100%;
     width: 100%;
     grid-area: statistics;
     display: flex;
     justify-content: space-between;
+
+    @include sm {
+      display: none;
+    }
 
     .current-time {
       display: flex;
@@ -726,6 +882,10 @@ export default {
     display: flex;
     flex-direction: column;
 
+    @include sm {
+      display: none;
+    }
+
     .timeline-list-wrapper {
       height: 100%;
       width: 100%;
@@ -852,6 +1012,407 @@ export default {
             transform: rotate(180deg);
           }
         }
+      }
+    }
+  }
+
+  &__mobile-view {
+    height: 100%;
+    width: 100%;
+    display: grid;
+    grid-template-areas:
+      'statistics-mobile'
+      'timeline-mobile';
+    grid-template-rows: 65% 35%;
+    grid-template-columns: 1fr;
+    user-select: none;
+
+    .statistics-wrapper {
+      height: 100%;
+      width: 100%;
+      grid-area: statistics-mobile;
+      display: flex;
+      flex-direction: column;
+
+      .time-location-wrapper {
+        height: fit-content;
+        padding: 20px;
+        box-sizing: border-box;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        .time {
+          margin-left: 24px;
+          font-size: 3.5rem;
+          font-weight: 700;
+          transition: margin-top 0.2s linear, opacity 0.2s linear;
+
+          .ampm {
+            margin-left: 5px;
+            font-size: 13px;
+            font-weight: 400;
+          }
+        }
+
+        .location-wrapper {
+          transition: all 0.25s linear;
+          display: flex;
+          width: fit-content;
+          height: fit-content;
+          align-items: center;
+          margin-top: -6px;
+          -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
+
+          .location-icon {
+            height: 1.2rem;
+            width: 1.2rem;
+          }
+
+          .location-name {
+            font-size: 16px;
+            margin-left: 4px;
+            cursor: pointer;
+
+            .change-location-label {
+              font-size: 12px;
+            }
+          }
+        }
+
+        .location-input-wrapper {
+          position: sticky;
+          top: 0;
+          height: 0px;
+          opacity: 0;
+          width: calc(100% - 50%);
+          transition: height 0.2s linear, width 0.2s linear, margin 0.2s linear,
+            opacity 0.2s linear;
+          margin-bottom: 50px;
+          border-radius: 3px;
+          display: flex;
+          align-items: center;
+
+          .back-btn-icon {
+            height: 16px;
+            width: 16px;
+            margin-left: 10px;
+            padding: 3px;
+            cursor: pointer;
+          }
+
+          .location-input {
+            width: 100%;
+            height: 100%;
+            outline: none;
+            border: none;
+            font-size: 16px;
+            color: white;
+            background: transparent;
+            margin-left: 8px;
+
+            &::-webkit-input-placeholder {
+              color: rgba(255, 255, 255, 0.616);
+            }
+          }
+
+          .geolocate-icon{
+            height: 22px;
+            width: 22px;
+            margin-right: 8px;
+            padding: 3px;
+            cursor: pointer;
+            -webkit-tap-highlight-color:  rgba(255, 255, 255, 0); 
+          }
+        }
+
+        .location-input-result-wrapper {
+          margin-bottom: -50px;
+          opacity: 0;
+          width: calc(100% + 20px);
+          height: 0px;
+          backdrop-filter: blur(5px);
+          transition: all 0.2s linear;
+
+          .location-result-item {
+            margin: 8px;
+            &__location-name {
+              font-size: 14px;
+              font-weight: 500;
+            }
+
+            &__location-country {
+              font-size: 11px;
+              margin-left: 10px;
+            }
+          }
+
+          &--enable {
+            margin-top: 8px;
+            height: 145px;
+            overflow: auto;
+            opacity: 1;
+            margin-bottom: 0px;
+          }
+        }
+      }
+
+      .temp-statistics-wrapper {
+        height: 100%;
+        box-sizing: border-box;
+        width: 100%;
+        padding: 18px 12px;
+        display: flex;
+        flex-direction: column;
+        // justify-content: space-between;
+
+        .current-temp-wrapper {
+          display: flex;
+          height: fit-content;
+          align-items: center;
+          justify-content: space-evenly;
+          width: 100%;
+          box-sizing: border-box;
+          padding: 5px 8px;
+          backdrop-filter: blur(3px);
+          transition: backdrop-filter 0.2s linear;
+
+          .weather-type-icon {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: margin-left 0.2s linear, opacity 0.2s linear;
+
+            .weather-icon {
+              height: 2.2rem;
+              width: 2.2rem;
+            }
+
+            .weather-type {
+              font-size: 20px;
+            }
+          }
+
+          .temp-icon-wrapper {
+            display: flex;
+            align-items: center;
+            width: fit-content;
+            height: fit-content;
+            cursor: pointer;
+            -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
+            transition: margin-right 0.2s linear, opacity 0.2s linear;
+
+            .temp-icon {
+              height: 2rem;
+              width: 2rem;
+            }
+
+            .temprature {
+              font-size: 45px;
+              font-weight: 600;
+            }
+          }
+        }
+
+        .other-stats-wrapper {
+          margin-top: 28px;
+          height: fit-content;
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: space-evenly;
+          box-sizing: border-box;
+          padding: 8px;
+          flex-wrap: wrap;
+          backdrop-filter: blur(3px);
+          transition: backdrop-filter 0.2s linear;
+
+          .stats-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: margin 0.2s linear, opacity 0.2s linear;
+
+            &__icon {
+              height: 1.6rem;
+              widows: 1.6rem;
+            }
+
+            &__value {
+              margin-top: 6px;
+              font-size: 16px;
+              font-weight: 600;
+            }
+
+            &__label {
+              margin-top: -4px;
+              font-size: 12px;
+            }
+          }
+        }
+      }
+    }
+
+    .timeline-wrapper {
+      height: 100%;
+      width: calc(100%);
+      overflow-x: auto;
+      overflow-y: hidden;
+      grid-area: timeline-mobile;
+      padding: 8px 5px;
+      box-sizing: border-box;
+      display: flex;
+      transition: margin 0.2s linear, opacity 0.2s linear;
+
+      &__day {
+        height: 30px;
+        min-width: 150px;
+        padding: 5px;
+        box-sizing: border-box;
+        opacity: 0;
+        font-size: 13.5px;
+        backdrop-filter: blur(3px);
+
+        &:first-child {
+          margin-left: 10px;
+        }
+
+        &:last-child {
+          margin-right: 25px;
+        }
+
+        &--show {
+          opacity: 1;
+        }
+      }
+
+      &__item-wrapper {
+        height: calc(100% - 40px);
+        align-self: center;
+        min-width: 150px;
+        margin-left: -150px;
+        margin-right: 12px;
+        padding: 5px;
+        margin-top: 30px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: space-around;
+        transition: all 0.15s linear;
+
+        &:first-child {
+          margin-left: -140px;
+        }
+
+        &:last-child {
+          margin-right: 25px;
+        }
+
+        .time {
+          margin-top: 30px;
+          font-size: 14px;
+          transition: all 0.15s linear;
+        }
+
+        .temprature {
+          margin-top: -30px;
+          font-size: 38px;
+          font-weight: 600;
+          transition: all 0.15s linear;
+        }
+
+        .feels-like {
+          font-size: 15px;
+          opacity: 0;
+          margin-bottom: -30px;
+          transition: all 0.15s linear;
+        }
+
+        &--active {
+          justify-content: space-evenly;
+          box-shadow: 0 19px 38px rgba(0, 0, 0, 0.3),
+            0 15px 12px rgba(0, 0, 0, 0.22);
+          backdrop-filter: blur(1px);
+
+          .time {
+            margin-top: 0px;
+          }
+
+          .temprature {
+            margin-top: 0px;
+            font-size: 45px;
+          }
+
+          .feels-like {
+            opacity: 1;
+            margin-bottom: 0px;
+          }
+        }
+      }
+    }
+
+    &--search-bar-enable {
+      .statistics-wrapper {
+        .time-location-wrapper {
+          .time {
+            margin-top: -85px;
+            opacity: 0;
+          }
+
+          .location-wrapper {
+            margin-top: -50px;
+          }
+
+          .location-input-wrapper {
+            height: 42px;
+            opacity: 1;
+            width: calc(100% + 20px);
+            margin-bottom: 0;
+            border: 1px solid rgba(255, 255, 255, 0.527);
+            margin-top: 12px;
+            backdrop-filter: blur(5px);
+          }
+        }
+        .temp-statistics-wrapper {
+          .current-temp-wrapper {
+            backdrop-filter: blur(0px);
+
+            .weather-type-icon {
+              margin-left: -650px;
+              opacity: 0;
+            }
+
+            .temp-icon-wrapper {
+              margin-right: -650px;
+              opacity: 0;
+            }
+          }
+
+          .other-stats-wrapper {
+            backdrop-filter: blur(0px);
+
+            .stats-wrapper {
+              &:nth-child(1) {
+                opacity: 0;
+                margin-left: -650px;
+              }
+              &:nth-child(2) {
+                opacity: 0;
+                margin-bottom: -250px;
+              }
+              &:nth-child(3) {
+                opacity: 0;
+                margin-right: -650px;
+              }
+            }
+          }
+        }
+      }
+      .timeline-wrapper {
+        opacity: 0;
+        margin-top: 250px;
       }
     }
   }
