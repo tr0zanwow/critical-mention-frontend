@@ -3,6 +3,9 @@ import Vuex from 'vuex'
 import axios from 'axios'
 import VuexPersistence from 'vuex-persist'
 
+const MAPBOX_API_KEY = 'pk.eyJ1IjoidHIwemFud293IiwiYSI6ImNrOWwzcXllbzAwdTgzZXA5amlkNTVib3QifQ.WGdBMQVJlRuVEPj1ILjs6Q'
+const WEATHER_API_KEY = 'e94221ac45b0148fb33f1c14a0c9b83d'
+
 Vue.use(Vuex)
 
 export default new Vuex.Store({
@@ -113,7 +116,7 @@ export default new Vuex.Store({
 
               // Reverse geocode to fetch location name based on coordinates
               const sParams = new URLSearchParams()
-              sParams.append('access_token', process.env.VUE_APP_MAPBOX_TOKEN)
+              sParams.append('access_token', MAPBOX_API_KEY)
               sParams.append('autocomplete', true)
               axios
                 .get(
@@ -160,7 +163,7 @@ export default new Vuex.Store({
       return new Promise((resolve, reject) => {
         // Mapbox geocoding api query parameters
         const sParams = new URLSearchParams()
-        sParams.append('access_token', process.env.VUE_APP_MAPBOX_TOKEN)
+        sParams.append('access_token', MAPBOX_API_KEY)
         sParams.append('autocomplete', true)
         axios
           .get(
@@ -211,11 +214,11 @@ export default new Vuex.Store({
         const sParams = new URLSearchParams()
         sParams.append('lat', payload.lat)
         sParams.append('lon', payload.long)
-        sParams.append('APPID', process.env.VUE_APP_OPENWEATHERAPI_APP_ID)
+        sParams.append('APPID', WEATHER_API_KEY)
         sParams.append('units', 'metric')
         sParams.append('exclude', 'minutely,daily,alerts')
         axios
-          .get('http://api.openweathermap.org/data/2.5/onecall', {
+          .get('https://api.openweathermap.org/data/2.5/onecall', {
             headers: {
               'Content-Type': 'application/json',
             },
