@@ -244,21 +244,24 @@ export default new Vuex.Store({
               },
             }
 
-            //Add all hourly weather data to weather data state
-            var hourlyData = response.data.hourly
-            hourlyData.map((item) => {
-              context.commit(
-                'setSelectedLocationWeatherData',
-                responseWeatherData.data.bind(item)()
-              )
-            })
-
-            //Pushing current weather data to second index of array
+            //Pushing current weather data to first index of array
             var currentData = response.data.current
             context.commit(
               'setSelectedLocationWeatherDataSpecificIndex',
               responseWeatherData.data.bind(currentData)()
             )
+
+            //Add all hourly weather data to weather data state
+            var hourlyData = response.data.hourly
+            hourlyData.map((item, index) => {
+              if (index != 0) {
+                context.commit(
+                  'setSelectedLocationWeatherData',
+                  responseWeatherData.data.bind(item)()
+                )
+              }
+            })
+
             resolve(context.state.selectedLocationWeatherData.data)
           })
           .catch((error) => {
