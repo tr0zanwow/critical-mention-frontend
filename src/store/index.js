@@ -3,7 +3,8 @@ import Vuex from 'vuex'
 import axios from 'axios'
 import VuexPersistence from 'vuex-persist'
 
-const MAPBOX_API_KEY = 'pk.eyJ1IjoidHIwemFud293IiwiYSI6ImNrOWwzcXllbzAwdTgzZXA5amlkNTVib3QifQ.WGdBMQVJlRuVEPj1ILjs6Q'
+const MAPBOX_API_KEY =
+  'pk.eyJ1IjoidHIwemFud293IiwiYSI6ImNrOWwzcXllbzAwdTgzZXA5amlkNTVib3QifQ.WGdBMQVJlRuVEPj1ILjs6Q'
 const WEATHER_API_KEY = 'e94221ac45b0148fb33f1c14a0c9b83d'
 
 Vue.use(Vuex)
@@ -107,7 +108,6 @@ export default new Vuex.Store({
         } else {
           navigator.geolocation.getCurrentPosition(
             (success) => {
-              console.log('inside success')
               let { longitude, latitude } = success.coords
               let coords = {
                 lat: latitude,
@@ -129,7 +129,6 @@ export default new Vuex.Store({
                   }
                 )
                 .then((response) => {
-                  console.log(response.data)
                   var data = response.data.features
                   data.map((item) => {
                     if (item.place_type[0] == 'place') {
@@ -145,7 +144,6 @@ export default new Vuex.Store({
               resolve(coords)
             },
             (error) => {
-              console.log('inside error')
               console.log(error)
               //Return mumbai coordinates as default when geolocation fails or permission denied
               let coords = {
