@@ -72,7 +72,7 @@
             >
               <div
                 class="loc-result-item"
-                v-for="(item, index) in autoSuggestLocationList"
+                v-for="(item, index) in autoSuggestLocationList()"
                 :key="item.location + index"
                 @click="getLocationWeather(item)"
               >
@@ -215,6 +215,7 @@
               src="@/assets/geolocate.svg"
               alt=""
               class="geolocate-icon"
+              ref="geolocateIconBtn"
             />
           </div>
           <div
@@ -225,7 +226,7 @@
           >
             <div
               class="location-result-item"
-              v-for="(item, index) in autoSuggestLocationList"
+              v-for="(item, index) in autoSuggestLocationList()"
               :key="item.location + index"
               @click="getLocationWeather(item)"
             >
@@ -403,10 +404,13 @@ export default {
     backBtnMobile() {
       this.showSearchBar = false
       this.showLocInputResult = false
+      this.$refs.geolocateIconBtn.style.pointerEvents = 'none'
     },
     showSearchBarAndFocus() {
       this.showSearchBar = true
       this.searchLocationInput = ''
+      this.$refs.locationInputMobile.style.pointerEvents = 'auto'
+      this.$refs.geolocateIconBtn.style.pointerEvents = 'auto'
       this.$refs.locationInputMobile.focus()
     },
     dayName(item, index) {
@@ -1111,6 +1115,7 @@ export default {
             color: white;
             background: transparent;
             margin-left: 8px;
+            pointer-events: none;
 
             &::-webkit-input-placeholder {
               color: rgba(255, 255, 255, 0.616);
@@ -1124,6 +1129,7 @@ export default {
             padding: 3px;
             cursor: pointer;
             -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
+            pointer-events: none;
           }
         }
 
