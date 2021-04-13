@@ -11,7 +11,6 @@ export default {
     Dashboard,
   },
   mounted() {
-    console.log(this.detectMobile())
     if (this.detectMobile()) {
       this.$refs.app.style.height = 'calc(100vh - 56px)'
     }
