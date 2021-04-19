@@ -7,6 +7,6 @@ module.exports = {
     },
   },
   publicPath:
-    process.env.NODE_ENV === 'production' ? '/criticalmention/' : '/',
+    process.env.NODE_ENV === 'production' ? '/weatherapp/' : '/',
   runtimeCompiler: true,
 }
