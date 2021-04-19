@@ -11,7 +11,8 @@ phases:
       - npm run build
   post_build:
     commands:
-      # remove files before putting new
-      - aws s3 rm s3://projects.pranilrathod.dev/criticalmention --recursive
-      # Add new dist files to s3 bucket
-      - aws s3 sync ./dist s3://projects.pranilrathod.dev/criticalmention
+
+artifacts:
+  files:
+    - "**/*"
+  base-directory: dist
