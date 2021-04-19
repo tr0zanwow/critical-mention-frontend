@@ -1,4 +1,4 @@
-# Critical Mention | Weather App | Vue
+# Weather App | Vue
 
 
 A Weather application created for [Critical Mention](https://www.criticalmention.com/) as a technical assignment. This Weather application is responsive, working on both desktop browser and mobile browser and has some useful functionalities. This Weather application project uses Vue.js on the frontend & consumes weather data from [OpenWeather](https://openweathermap.org/) API.
