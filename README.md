@@ -51,5 +51,3 @@ Contributions, issues, and feature requests are welcome! Feel free to check the 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
-
-This version adds a more structured layout, includes badges for technologies used, and enhances the technical descriptions. The placeholder image link can be replaced with actual screenshots of your app.
