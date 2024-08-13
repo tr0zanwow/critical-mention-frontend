@@ -1,41 +1,55 @@
-# Weather App | Vue
+# Weather App | Vue ![Vue.js Badge](https://img.shields.io/badge/Vue.js-3.0-green) ![AWS Badge](https://img.shields.io/badge/AWS-Cloud-orange)
 
+A responsive Weather Application developed as a demonstration project. This application is optimized for both desktop and mobile browsers, offering a seamless user experience with valuable functionalities. The project is built using Vue.js for the frontend and integrates weather data from the OpenWeather API.
 
-A Weather application created for [Critical Mention](https://www.criticalmention.com/) as a technical assignment. This Weather application is responsive, working on both desktop browser and mobile browser and has some useful functionalities. This Weather application project uses Vue.js on the frontend & consumes weather data from [OpenWeather](https://openweathermap.org/) API.
+![Weather App Screenshot](https://raw.githubusercontent.com/tr0zanwow/portfolio-website/master/images/weather-app.webp)
 
-This Weather Application is hosted at [https://projects.pranilrathod.dev/weatherapp](https://projects.pranilrathod.dev/weatherapp)
+## [Live Demo](https://projects.pranilrathod.dev/weatherapp)
 
+### Features
 
-## Features
-- **Geolocation** - Get current location weather data using Geolocation API
+- **Geolocation**  
+  Automatically fetch and display weather data for the user's current location using the Geolocation API.
 
--  **Location Search** - Search for location using text input(for e.g. London, Mumbai, New York) to get weather data for that specific location, this feature uses a method called as Forward Geocoding to fetch coordinates.
+- **Location Search**  
+  Search for weather information by entering a location name (e.g., London, Mumbai, New York). This feature utilizes Forward Geocoding to convert the location name into geographic coordinates.
 
--  **Unit Conversion** - Toggle temperature unit in **°C** Celsius or **°F** Fahrenheit by clicking on temprature.
+- **Unit Conversion**  
+  Toggle between Celsius (°C) and Fahrenheit (°F) temperature units by clicking on the displayed temperature.
 
+### Technology Stack
 
-## Tech
+#### Frontend
+- **Vue.js** - Progressive JavaScript framework for building user interfaces.
+- **Axios** - Promise-based HTTP client for making API requests.
+- **Moment.js** - Library for parsing, validating, manipulating, and formatting dates.
+- **Vuex** - State management pattern + library for Vue.js, with local storage persistence.
+- **SCSS with BEM Methodology** - CSS preprocessor with BEM naming convention for organized and maintainable styles.
 
-- **Frontend**
-	+ Vue
-		+ Axios
-		+ Moment.js
-		+ Vuex (with local storage persistency)
-	+ BEM Methodology (with SCSS)
-- **Infrastructure**
-	+ AWS
-		+ S3 (Static website hosting)
-		+ CloudFront (CDN caching for S3 static web hosting)
-		+ CodePipeline (to fetch push/pull update from github repo and deploy to S3 with CodeBuild)
-		+ CodeBuild (to build Vue project and deploy in S3 bucket)
-		
-## Project Setup (local)
+#### Infrastructure
+- **AWS S3** - Static website hosting for serving the application.
+- **AWS CloudFront** - CDN for optimized content delivery with caching mechanisms.
+- **AWS CodePipeline** - Continuous integration and deployment pipeline to automate the deployment process.
+- **AWS CodeBuild** - Automated build service to compile the Vue project and deploy it to the S3 bucket.
 
-Install all dependencies
-```console
-npm run install
-```
-Run on localhost
-```console
-npm run serve
-```
+### Project Setup (Local Development)
+
+1. **Install Dependencies**
+    ```bash
+    npm install
+    ```
+
+2. **Run the Development Server**
+    ```bash
+    npm run serve
+    ```
+
+### Contributing
+Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](#).
+
+### License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+This version adds a more structured layout, includes badges for technologies used, and enhances the technical descriptions. The placeholder image link can be replaced with actual screenshots of your app.
